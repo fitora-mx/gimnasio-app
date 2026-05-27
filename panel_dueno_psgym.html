@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfect Sport Gym — Panel del Dueño</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --verde: #7CB342;
+    --verde-osc: #5a8a30;
+    --negro: #0f0f0f;
+    --gris-osc: #1a1a1a;
+    --gris-med: #2d2d2d;
+    --gris-claro: #d4d4d4;
+    --texto: #fff;
+    --texto-sec: #9ca3af;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1100px; margin: 0 auto; padding: 24px; color: var(--texto); background: var(--negro); }
+  h1 { font-size: 28px; margin: 0 0 4px 0; color: var(--verde); letter-spacing: 1px; font-weight: 900; }
+  .subtitle { color: var(--texto-sec); margin: 0 0 24px 0; font-size: 13px; letter-spacing: 1px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--gris-med); margin-bottom: 24px; flex-wrap: wrap; }
+  .tab { padding: 12px 20px; cursor: pointer; border: none; background: transparent; font-size: 14px; font-weight: 700; color: var(--texto-sec); border-bottom: 3px solid transparent; margin-bottom: -2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tab:hover { color: var(--gris-claro); }
+  .tab.active { color: var(--verde); border-bottom-color: var(--verde); }
+  .card { background: var(--gris-osc); border: 1px solid var(--gris-med); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; font-weight: 700; color: var(--verde); text-transform: uppercase; letter-spacing: 0.5px; }
+  .field input, .field select, .field textarea { padding: 10px 12px; border: 1px solid var(--gris-med); border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; background: var(--negro); color: var(--texto); }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--verde); }
+  .btn { padding: 11px 22px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; text-transform: uppercase; letter-spacing: 0.5px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: var(--verde); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--verde-osc); }
+  .btn-ghost { background: var(--gris-med); color: var(--gris-claro); }
+  .btn-danger { background: #4a1a1a; color: #fca5a5; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 12px; background: var(--negro); font-weight: 700; color: var(--verde); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 12px; border-bottom: 1px solid var(--gris-med); color: var(--gris-claro); }
+  tr:hover td { background: var(--negro); }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-ok { background: rgba(124,179,66,0.2); color: var(--verde); }
+  .badge-soon { background: rgba(217,119,6,0.2); color: #fbbf24; }
+  .badge-late { background: rgba(220,38,38,0.2); color: #f87171; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat { background: var(--gris-osc); border: 1px solid var(--gris-med); border-radius: 10px; padding: 16px; }
+  .stat-label { font-size: 11px; color: var(--texto-sec); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+  .stat-value { font-size: 30px; font-weight: 900; margin-top: 4px; color: var(--texto); }
+  .result { padding: 24px; border-radius: 12px; margin-top: 16px; text-align: center; }
+  .result-ok { background: linear-gradient(135deg, var(--verde), var(--verde-osc)); color: #fff; }
+  .result-bad { background: linear-gradient(135deg, #991b1b, #7f1d1d); color: #fff; }
+  .result h2 { margin: 0 0 8px 0; font-size: 26px; font-weight: 900; }
+  .result p { margin: 4px 0; font-size: 15px; }
+  .search { width: 100%; padding: 10px 14px; border: 1px solid var(--gris-med); border-radius: 8px; font-size: 14px; margin-bottom: 12px; font-family: inherit; background: var(--negro); color: var(--texto); }
+  .empty { text-align: center; padding: 40px; color: var(--texto-sec); }
+  .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+  .msg-ok { padding: 16px; background: rgba(124,179,66,0.15); color: var(--verde); border-radius: 8px; border-left: 4px solid var(--verde); }
+  .msg-err { padding: 12px; background: rgba(220,38,38,0.15); color: #f87171; border-radius: 8px; border-left: 4px solid #dc2626; }
+  .aviso-item { padding: 14px; border-left: 4px solid var(--verde); background: var(--negro); border-radius: 6px; margin-bottom: 10px; }
+  .aviso-item.urgente { border-left-color: #dc2626; background: rgba(220,38,38,0.05); }
+  .aviso-meta { font-size: 12px; color: var(--texto-sec); margin-top: 4px; }
+  .config-banner { background: rgba(217,119,6,0.15); border: 1px solid #d97706; color: #fbbf24; padding: 16px; border-radius: 10px; margin-bottom: 20px; }
+  .loader { text-align: center; padding: 40px; color: var(--texto-sec); }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid var(--gris-med); border-top-color: var(--verde); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .brand-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .logo-mini { width: 56px; height: 56px; border-radius: 50%; background: var(--gris-osc); border: 2px solid var(--verde); display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--verde); font-size: 18px; }
+  .brand-text h1 { margin: 0; }
+  .brand-text .tagline { font-size: 10px; letter-spacing: 3px; color: var(--verde); opacity: 0.8; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="brand-header">
+  <div class="logo-mini">PS</div>
+  <div class="brand-text">
+    <h1>PERFECT SPORT GYM</h1>
+    <div class="tagline">ENTRENA · COMPITE · REPITE</div>
+  </div>
+</div>
+
+<p class="subtitle">PANEL DEL DUEÑO · <span id="status">verificando...</span></p>
+
+<div id="config-banner-wrap"></div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="checkin">Check-in</button>
+  <button class="tab" data-tab="alta">Alta de socio</button>
+  <button class="tab" data-tab="socios">Socios</button>
+  <button class="tab" data-tab="clases">Clases</button>
+  <button class="tab" data-tab="avisos">Avisos</button>
+  <button class="tab" data-tab="config">⚙️ Config</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+let API_URL = localStorage.getItem('gym:api_url') || '';
+
+const PLANES = {
+  'Mensual': { dias: 30, precio: 500 }
+};
+const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+async function apiGet(accion, params = {}) {
+  if (!API_URL) throw new Error('Configura primero la URL de la API');
+  const qs = new URLSearchParams({ accion, ...params }).toString();
+  const res = await fetch(`${API_URL}?${qs}`);
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'error_api');
+  return json.data;
+}
+async function apiPost(accion, body) {
+  if (!API_URL) throw new Error('Configura primero la URL de la API');
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ accion, ...body })
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'error_api');
+  return json.data;
+}
+
+function diasRestantes(vence) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const v = new Date(vence); v.setHours(0,0,0,0);
+  return Math.round((v - hoy) / 86400000);
+}
+function estado(socio) {
+  const d = diasRestantes(socio.Vence);
+  if (d < 0) return { tipo: 'late', label: 'Vencida', dias: d };
+  if (d <= 5) return { tipo: 'soon', label: `Por vencer (${d}d)`, dias: d };
+  return { tipo: 'ok', label: `Vigente (${d}d)`, dias: d };
+}
+
+let activeTab = 'checkin';
+const content = document.getElementById('content');
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    activeTab = t.dataset.tab;
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+    render();
+  });
+});
+
+function loader(msg='Cargando...') { return `<div class="loader"><span class="spinner"></span>${msg}</div>`; }
+
+function checkApi() {
+  if (!API_URL) {
+    document.getElementById('status').textContent = '⚠️ no configurado';
+    document.getElementById('config-banner-wrap').innerHTML = `
+      <div class="config-banner">
+        <strong>⚠️ Primera vez aquí</strong><br>
+        Configura la URL de tu API en la pestaña <strong>⚙️ Config</strong>.
+      </div>`;
+    activeTab = 'config';
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === 'config'));
+  } else {
+    document.getElementById('status').textContent = '✅ conectado';
+    document.getElementById('config-banner-wrap').innerHTML = '';
+  }
+}
+
+function render() {
+  checkApi();
+  if (activeTab === 'checkin') renderCheckin();
+  else if (activeTab === 'alta') renderAlta();
+  else if (activeTab === 'socios') renderSocios();
+  else if (activeTab === 'clases') renderClases();
+  else if (activeTab === 'avisos') renderAvisos();
+  else if (activeTab === 'config') renderConfig();
+}
+
+function renderConfig() {
+  content.innerHTML = `
+    <div class="card">
+      <h3 style="margin-top:0; color: var(--verde)">⚙️ Configuración de la API</h3>
+      <p style="color: var(--texto-sec)">Pega aquí la URL de Apps Script.</p>
+      <div class="field"><label>URL de la API</label>
+        <input id="cfg-url" type="url" value="${API_URL}" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <div style="margin-top:16px; display:flex; gap:10px;">
+        <button id="cfg-guardar" class="btn btn-primary">Guardar</button>
+        <button id="cfg-test" class="btn btn-ghost">Probar conexión</button>
+      </div>
+      <div id="cfg-msg" style="margin-top:14px"></div>
+    </div>
+  `;
+  document.getElementById('cfg-guardar').addEventListener('click', () => {
+    const url = document.getElementById('cfg-url').value.trim();
+    if (!url.startsWith('https://script.google.com')) {
+      document.getElementById('cfg-msg').innerHTML = `<div class="msg-err">⚠️ URL inválida</div>`;
+      return;
+    }
+    API_URL = url;
+    localStorage.setItem('gym:api_url', url);
+    document.getElementById('cfg-msg').innerHTML = `<div class="msg-ok">✅ URL guardada</div>`;
+    setTimeout(() => { activeTab = 'checkin'; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === 'checkin')); render(); }, 800);
+  });
+  document.getElementById('cfg-test').addEventListener('click', async () => {
+    const url = document.getElementById('cfg-url').value.trim();
+    if (!url) return;
+    document.getElementById('cfg-msg').innerHTML = `<div class="loader"><span class="spinner"></span>Probando...</div>`;
+    try {
+      const res = await fetch(`${url}?accion=socios`);
+      const json = await res.json();
+      if (json.ok) {
+        document.getElementById('cfg-msg').innerHTML = `<div class="msg-ok">✅ Conexión exitosa. Socios: ${json.data.length}</div>`;
+      } else {
+        document.getElementById('cfg-msg').innerHTML = `<div class="msg-err">❌ ${json.error || 'Error'}</div>`;
+      }
+    } catch (e) {
+      document.getElementById('cfg-msg').innerHTML = `<div class="msg-err">❌ ${e.message}</div>`;
+    }
+  });
+}
+
+async function renderCheckin() {
+  if (!API_URL) return;
+  content.innerHTML = loader('Cargando socios...');
+  try {
+    const socios = await apiGet('socios');
+    const ok = socios.filter(s => estado(s).tipo === 'ok').length;
+    const soon = socios.filter(s => estado(s).tipo === 'soon').length;
+    const late = socios.filter(s => estado(s).tipo === 'late').length;
+    content.innerHTML = `
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Total</div><div class="stat-value">${socios.length}</div></div>
+        <div class="stat"><div class="stat-label">Vigentes</div><div class="stat-value" style="color:var(--verde)">${ok}</div></div>
+        <div class="stat"><div class="stat-label">Por vencer</div><div class="stat-value" style="color:#fbbf24">${soon}</div></div>
+        <div class="stat"><div class="stat-label">Vencidos</div><div class="stat-value" style="color:#f87171">${late}</div></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0; color: var(--verde)">REGISTRAR ENTRADA</h3>
+        <p style="color: var(--texto-sec); margin-top:0">Ingresa el número de socio para validar acceso</p>
+        <div style="display:flex; gap:12px;">
+          <input id="ci-num" type="number" placeholder="Ej. 1001" style="flex:1; padding:14px; border:1px solid var(--gris-med); background:var(--negro); color:var(--texto); border-radius:8px; font-size:20px; font-weight:700;" autofocus>
+          <button id="ci-btn" class="btn btn-primary" style="padding:14px 32px; font-size:15px;">VALIDAR</button>
+        </div>
+        <div id="ci-result"></div>
+      </div>
+    `;
+    const input = document.getElementById('ci-num');
+    const result = document.getElementById('ci-result');
+    async function validar() {
+      const num = parseInt(input.value);
+      if (!num) return;
+      result.innerHTML = loader('Verificando...');
+      try {
+        const s = await apiGet('socio', { numero: num });
+        const e = estado(s);
+        if (e.tipo === 'late') {
+          result.innerHTML = `<div class="result result-bad"><h2>🚫 ACCESO DENEGADO</h2>
+            <p><strong>${s.Nombre}</strong> · Socio #${s.Numero}</p>
+            <p>Vencida hace <strong>${Math.abs(e.dias)} días</strong> (${s.Vence})</p>
+            <p style="margin-top:12px">Renovar plan ${s.Plan}: <strong>$${PLANES[s.Plan]?.precio || 500}</strong></p></div>`;
+        } else {
+          const aviso = e.tipo === 'soon' ? `<p style="color:#fef3c7"><strong>⚠️ Vence en ${e.dias} días</strong></p>` : '';
+          result.innerHTML = `<div class="result result-ok"><h2>✅ ACCESO PERMITIDO</h2>
+            <p style="font-size:22px"><strong>${s.Nombre}</strong></p>
+            <p>Socio #${s.Numero} · Plan ${s.Plan}</p>
+            <p>Vence: <strong>${s.Vence}</strong> (${e.dias} días)</p>${aviso}</div>`;
+        }
+      } catch {
+        result.innerHTML = `<div class="result result-bad"><h2>❌ SOCIO NO ENCONTRADO</h2><p>El número ${num} no existe.</p></div>`;
+      }
+      input.value = '';
+      setTimeout(() => input.focus(), 100);
+    }
+    document.getElementById('ci-btn').addEventListener('click', validar);
+    input.addEventListener('keypress', e => { if (e.key === 'Enter') validar(); });
+  } catch (e) {
+    content.innerHTML = `<div class="msg-err">Error al cargar: ${e.message}</div>`;
+  }
+}
+
+function renderAlta() {
+  if (!API_URL) return;
+  const hoy = new Date().toISOString().split('T')[0];
+  content.innerHTML = `
+    <div class="card">
+      <h3 style="margin-top:0; color: var(--verde)">NUEVO SOCIO</h3>
+      <div class="grid">
+        <div class="field"><label>Nombre completo *</label><input id="f-nombre" type="text" placeholder="Ej. Juan Pérez García"></div>
+        <div class="field"><label>Teléfono WhatsApp *</label><input id="f-tel" type="tel" placeholder="5512345678"></div>
+        <div class="field"><label>Fecha de inscripción *</label><input id="f-fecha" type="date" value="${hoy}"></div>
+        <div class="field"><label>Plan</label><select id="f-plan">
+          ${Object.entries(PLANES).map(([k,v]) => `<option value="${k}">${k} — $${v.precio} (${v.dias} días)</option>`).join('')}
+        </select></div>
+        <div class="field"><label>Monto pagado ($)</label><input id="f-monto" type="number" value="500"></div>
+        <div class="field"><label>Correo (opcional)</label><input id="f-mail" type="email" placeholder="correo@ejemplo.com"></div>
+      </div>
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button id="btn-guardar" class="btn btn-primary">REGISTRAR SOCIO</button>
+        <button id="btn-limpiar" class="btn btn-ghost">Limpiar</button>
+      </div>
+      <div id="alta-msg" style="margin-top:16px"></div>
+    </div>
+  `;
+  document.getElementById('f-plan').addEventListener('change', e => {
+    document.getElementById('f-monto').value = PLANES[e.target.value].precio;
+  });
+  document.getElementById('btn-limpiar').addEventListener('click', renderAlta);
+  document.getElementById('btn-guardar').addEventListener('click', async () => {
+    const nombre = document.getElementById('f-nombre').value.trim();
+    const tel = document.getElementById('f-tel').value.trim();
+    const fecha = document.getElementById('f-fecha').value;
+    const plan = document.getElementById('f-plan').value;
+    const monto = parseFloat(document.getElementById('f-monto').value) || 0;
+    const mail = document.getElementById('f-mail').value.trim();
+    const msg = document.getElementById('alta-msg');
+    const btn = document.getElementById('btn-guardar');
+    if (!nombre || !fecha || !tel) {
+      msg.innerHTML = `<div class="msg-err">⚠️ Nombre, teléfono y fecha son obligatorios.</div>`;
+      return;
+    }
+    btn.disabled = true;
+    msg.innerHTML = loader('Guardando...');
+    try {
+      const r = await apiPost('alta_socio', { nombre, telefono: tel, correo: mail, fechaInscripcion: fecha, plan, monto });
+      msg.innerHTML = `<div class="msg-ok">✅ <strong>SOCIO REGISTRADO</strong><br>
+        Número: <strong style="font-size:24px">#${r.numero}</strong> · Vence: <strong>${r.vence}</strong><br>
+        📱 Confirmación enviada por WhatsApp</div>`;
+      document.getElementById('f-nombre').value = '';
+      document.getElementById('f-tel').value = '';
+      document.getElementById('f-mail').value = '';
+    } catch (e) {
+      msg.innerHTML = `<div class="msg-err">❌ ${e.message}</div>`;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+async function renderSocios() {
+  if (!API_URL) return;
+  content.innerHTML = loader('Cargando...');
+  try {
+    const socios = await apiGet('socios');
+    content.innerHTML = `
+      <div class="card">
+        <div class="header-row">
+          <h3 style="margin:0; color: var(--verde)">BASE DE SOCIOS (${socios.length})</h3>
+          <button id="export-btn" class="btn btn-ghost">📥 Exportar CSV</button>
+        </div>
+        <input id="busca" class="search" placeholder="🔍 Buscar por nombre o número...">
+        <div id="lista"></div>
+      </div>
+    `;
+    function pinta(filtro = '') {
+      const f = filtro.toLowerCase();
+      const filt = socios.filter(s => s.Nombre.toLowerCase().includes(f) || String(s.Numero).includes(f));
+      const lista = document.getElementById('lista');
+      if (!filt.length) {
+        lista.innerHTML = `<div class="empty">${filtro ? 'Sin coincidencias.' : 'Aún no hay socios.'}</div>`;
+        return;
+      }
+      lista.innerHTML = `<table>
+        <thead><tr><th>#</th><th>Nombre</th><th>Plan</th><th>Vence</th><th>Estado</th><th></th></tr></thead>
+        <tbody>${filt.map(s => {
+          const e = estado(s);
+          return `<tr>
+            <td><strong style="color:var(--verde)">${s.Numero}</strong></td>
+            <td>${s.Nombre}<br><small style="color:var(--texto-sec)">${s.Telefono || ''}</small></td>
+            <td>${s.Plan}</td><td>${s.Vence}</td>
+            <td><span class="badge badge-${e.tipo}">${e.label}</span></td>
+            <td style="white-space:nowrap">
+              <button class="btn btn-primary" data-renovar="${s.Numero}" data-plan="${s.Plan}" style="padding:5px 10px; font-size:11px">💰 Renovar</button>
+              <button class="btn btn-danger" data-del="${s.Numero}" style="padding:5px 10px; font-size:11px; margin-left:4px">Eliminar</button>
+            </td>
+          </tr>`;
+        }).join('')}</tbody></table>`;
+      lista.querySelectorAll('[data-del]').forEach(b => {
+        b.addEventListener('click', async () => {
+          if (!confirm('¿Eliminar este socio?')) return;
+          await apiPost('eliminar_socio', { numero: parseInt(b.dataset.del) });
+          renderSocios();
+        });
+      });
+      lista.querySelectorAll('[data-renovar]').forEach(b => {
+        b.addEventListener('click', async () => {
+          const num = parseInt(b.dataset.renovar);
+          if (!confirm(`¿Renovar plan Mensual del socio #${num} por $500?`)) return;
+          try {
+            await apiPost('renovar_socio', { numero: num, plan: 'Mensual', monto: 500 });
+            alert(`✅ Renovación registrada. WhatsApp enviado.`);
+            renderSocios();
+          } catch (e) { alert('❌ ' + e.message); }
+        });
+      });
+    }
+    document.getElementById('busca').addEventListener('input', e => pinta(e.target.value));
+    document.getElementById('export-btn').addEventListener('click', () => {
+      const headers = ['Numero','Nombre','Telefono','Correo','FechaInscripcion','Plan','Monto','Vence'];
+      const rows = socios.map(s => headers.map(h => s[h] ?? ''));
+      const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'socios_psgym.csv'; a.click();
+    });
+    pinta();
+  } catch (e) { content.innerHTML = `<div class="msg-err">Error: ${e.message}</div>`; }
+}
+
+async function renderClases() {
+  if (!API_URL) return;
+  content.innerHTML = loader('Cargando...');
+  try {
+    const clases = await apiGet('clases');
+    content.innerHTML = `
+      <div class="card">
+        <h3 style="margin-top:0; color: var(--verde)">PROGRAMAR CLASE</h3>
+        <div class="grid-3">
+          <div class="field"><label>Nombre *</label><input id="c-nombre" placeholder="Ej. CrossFit"></div>
+          <div class="field"><label>Coach *</label><input id="c-coach" placeholder="Ej. Carlos Méndez"></div>
+          <div class="field"><label>Día *</label><select id="c-dia">${DIAS.map(d => `<option>${d}</option>`).join('')}</select></div>
+          <div class="field"><label>Hora inicio *</label><input id="c-inicio" type="time" value="07:00"></div>
+          <div class="field"><label>Hora fin *</label><input id="c-fin" type="time" value="08:00"></div>
+          <div class="field"><label>Cupo</label><input id="c-cupo" type="number" value="20" min="1"></div>
+        </div>
+        <div class="field" style="margin-top:16px"><label>Descripción</label>
+          <textarea id="c-desc" rows="2" placeholder="Intensidad, qué llevar, etc."></textarea>
+        </div>
+        <div style="margin-top:16px"><button id="c-guardar" class="btn btn-primary">AGREGAR CLASE</button></div>
+        <div id="c-msg" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0; color: var(--verde)">CLASES PROGRAMADAS (${clases.length})</h3>
+        <div id="c-lista"></div>
+      </div>
+    `;
+    document.getElementById('c-guardar').addEventListener('click', async () => {
+      const nombre = document.getElementById('c-nombre').value.trim();
+      const coach = document.getElementById('c-coach').value.trim();
+      const dia = document.getElementById('c-dia').value;
+      const inicio = document.getElementById('c-inicio').value;
+      const fin = document.getElementById('c-fin').value;
+      const cupo = parseInt(document.getElementById('c-cupo').value) || 20;
+      const desc = document.getElementById('c-desc').value.trim();
+      if (!nombre || !coach || !inicio || !fin) {
+        document.getElementById('c-msg').innerHTML = `<div class="msg-err">⚠️ Completa los campos obligatorios.</div>`;
+        return;
+      }
+      try {
+        await apiPost('alta_clase', { nombre, coach, dia, inicio, fin, cupo, desc });
+        renderClases();
+      } catch (e) { document.getElementById('c-msg').innerHTML = `<div class="msg-err">${e.message}</div>`; }
+    });
+    const lista = document.getElementById('c-lista');
+    if (!clases.length) {
+      lista.innerHTML = `<div class="empty">Aún no hay clases programadas.</div>`;
+    } else {
+      const porDia = {};
+      DIAS.forEach(d => porDia[d] = []);
+      clases.forEach(c => { if (porDia[c.Dia]) porDia[c.Dia].push(c); });
+      Object.values(porDia).forEach(arr => arr.sort((a,b) => String(a.Inicio).localeCompare(String(b.Inicio))));
+      lista.innerHTML = DIAS.filter(d => porDia[d].length).map(d => `
+        <h4 style="margin:18px 0 8px; color: var(--verde); text-transform: uppercase; letter-spacing: 1px;">${d}</h4>
+        <table><thead><tr><th>Hora</th><th>Clase</th><th>Coach</th><th>Cupo</th><th></th></tr></thead>
+        <tbody>${porDia[d].map(c => `<tr>
+          <td><strong style="color:var(--verde)">${c.Inicio} – ${c.Fin}</strong></td>
+          <td>${c.Nombre}${c.Descripcion ? `<br><small style="color:var(--texto-sec)">${c.Descripcion}</small>` : ''}</td>
+          <td>${c.Coach}</td>
+          <td>${c.Cupo}</td>
+          <td><button class="btn btn-danger" data-del-clase="${c.Id}" style="padding:5px 10px; font-size:11px">Eliminar</button></td>
+        </tr>`).join('')}</tbody></table>
+      `).join('');
+      lista.querySelectorAll('[data-del-clase]').forEach(b => {
+        b.addEventListener('click', async () => {
+          if (!confirm('¿Eliminar esta clase?')) return;
+          await apiPost('eliminar_clase', { id: b.dataset.delClase });
+          renderClases();
+        });
+      });
+    }
+  } catch (e) { content.innerHTML = `<div class="msg-err">${e.message}</div>`; }
+}
+
+async function renderAvisos() {
+  if (!API_URL) return;
+  content.innerHTML = loader('Cargando...');
+  try {
+    const avisos = await apiGet('avisos');
+    content.innerHTML = `
+      <div class="card">
+        <h3 style="margin-top:0; color: var(--verde)">PUBLICAR AVISO</h3>
+        <div class="field"><label>Título *</label><input id="a-titulo" placeholder="Ej. Mantenimiento de regaderas"></div>
+        <div class="field" style="margin-top:12px"><label>Mensaje *</label>
+          <textarea id="a-msg" rows="3" placeholder="Describe el aviso..."></textarea>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center; margin-top:12px;">
+          <label style="display:flex; gap:6px; align-items:center; font-size:13px; color: var(--gris-claro)">
+            <input id="a-urg" type="checkbox"> Marcar como urgente
+          </label>
+        </div>
+        <div style="margin-top:16px"><button id="a-guardar" class="btn btn-primary">PUBLICAR AVISO</button></div>
+        <div id="a-msg-status" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0; color: var(--verde)">AVISOS PUBLICADOS (${avisos.length})</h3>
+        <div id="a-lista"></div>
+      </div>
+    `;
+    document.getElementById('a-guardar').addEventListener('click', async () => {
+      const titulo = document.getElementById('a-titulo').value.trim();
+      const mensaje = document.getElementById('a-msg').value.trim();
+      const urgente = document.getElementById('a-urg').checked;
+      if (!titulo || !mensaje) {
+        document.getElementById('a-msg-status').innerHTML = `<div class="msg-err">⚠️ Título y mensaje obligatorios.</div>`;
+        return;
+      }
+      try {
+        await apiPost('alta_aviso', { titulo, mensaje, urgente });
+        renderAvisos();
+      } catch (e) { document.getElementById('a-msg-status').innerHTML = `<div class="msg-err">${e.message}</div>`; }
+    });
+    const lista = document.getElementById('a-lista');
+    if (!avisos.length) {
+      lista.innerHTML = `<div class="empty">Aún no hay avisos publicados.</div>`;
+    } else {
+      lista.innerHTML = avisos.map(a => `
+        <div class="aviso-item ${a.Urgente ? 'urgente' : ''}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <div style="flex:1">
+              <strong style="color:${a.Urgente ? '#f87171' : 'var(--verde)'}">${a.Urgente ? '🚨 ' : '📢 '}${a.Titulo}</strong>
+              <div style="margin-top:6px; color: var(--gris-claro)">${a.Mensaje}</div>
+              <div class="aviso-meta">${new Date(a.Fecha).toLocaleString('es-MX')}</div>
+            </div>
+            <button class="btn btn-danger" data-del-aviso="${a.Id}" style="padding:5px 10px; font-size:11px">Eliminar</button>
+          </div>
+        </div>
+      `).join('');
+      lista.querySelectorAll('[data-del-aviso]').forEach(b => {
+        b.addEventListener('click', async () => {
+          if (!confirm('¿Eliminar este aviso?')) return;
+          await apiPost('eliminar_aviso', { id: b.dataset.delAviso });
+          renderAvisos();
+        });
+      });
+    }
+  } catch (e) { content.innerHTML = `<div class="msg-err">${e.message}</div>`; }
+}
+
+render();
+</script>
+</body>
+</html>

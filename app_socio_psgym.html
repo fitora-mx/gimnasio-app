@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfect Sport Gym</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --verde: #7CB342;
+    --verde-osc: #5a8a30;
+    --negro: #0f0f0f;
+    --gris-osc: #1a1a1a;
+    --gris-med: #2d2d2d;
+    --gris-claro: #d4d4d4;
+    --texto: #fff;
+    --texto-sec: #9ca3af;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; min-height: 100vh; background: #000; color: var(--texto); }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--negro); box-shadow: 0 0 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+  .topbar { background: linear-gradient(135deg, var(--gris-osc), #2d2d2d); color: #fff; padding: 20px; border-bottom: 2px solid var(--verde); }
+  .topbar h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; }
+  .topbar .saludo { font-size: 12px; color: var(--verde); margin-top: 2px; letter-spacing: 1px; font-weight: 700; }
+  .logout { float: right; background: rgba(124,179,66,0.15); color: var(--verde); border: 1px solid var(--verde); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .main { flex: 1; padding: 20px; }
+  .card { background: var(--gris-osc); border: 1px solid var(--gris-med); border-radius: 14px; padding: 20px; margin-bottom: 14px; }
+  .card-title { font-size: 11px; color: var(--verde); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 12px; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field label { font-size: 12px; font-weight: 700; color: var(--verde); text-transform: uppercase; letter-spacing: 0.5px; }
+  .field input { padding: 14px; border: 1px solid var(--gris-med); border-radius: 10px; font-size: 18px; outline: none; font-family: inherit; text-align: center; font-weight: 700; background: var(--negro); color: var(--texto); }
+  .field input:focus { border-color: var(--verde); }
+  .field input.normal { text-align: left; font-size: 14px; font-weight: 400; }
+  .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; text-transform: uppercase; letter-spacing: 1px; }
+  .btn:disabled { opacity: 0.5; }
+  .btn-primary { background: var(--verde); color: #fff; }
+  .login-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--negro); }
+  .login-box { background: var(--gris-osc); border: 1px solid var(--gris-med); border-radius: 16px; padding: 32px 24px; width: 100%; max-width: 380px; box-shadow: 0 10px 40px rgba(124,179,66,0.15); }
+  .login-box h2 { margin: 0 0 4px 0; text-align: center; font-size: 22px; font-weight: 900; letter-spacing: 1px; }
+  .login-box .sub { text-align: center; color: var(--verde); margin: 0 0 24px 0; font-size: 11px; letter-spacing: 3px; font-weight: 700; }
+  .logo-circle { width: 90px; height: 90px; border-radius: 50%; background: var(--negro); border: 3px solid var(--verde); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: var(--verde); margin: 0 auto 14px; }
+  .mem-card { background: linear-gradient(135deg, var(--verde), var(--verde-osc)); color: #fff; border-radius: 16px; padding: 24px; margin-bottom: 14px; box-shadow: 0 4px 30px rgba(124,179,66,0.3); position: relative; overflow: hidden; }
+  .mem-card.vencida { background: linear-gradient(135deg, #991b1b, #7f1d1d); box-shadow: 0 4px 30px rgba(220,38,38,0.3); }
+  .mem-card.porvencer { background: linear-gradient(135deg, #d97706, #b45309); box-shadow: 0 4px 30px rgba(217,119,6,0.3); }
+  .mem-card::before { content: 'PS'; position: absolute; right: -10px; top: -10px; font-size: 100px; font-weight: 900; opacity: 0.1; letter-spacing: -10px; }
+  .mem-num { font-size: 11px; opacity: 0.9; letter-spacing: 2px; font-weight: 700; }
+  .mem-nombre { font-size: 22px; font-weight: 800; margin: 4px 0 16px; }
+  .mem-status { font-size: 28px; font-weight: 900; letter-spacing: 2px; }
+  .mem-detalle { margin-top: 12px; font-size: 14px; opacity: 0.95; }
+  .clase-row { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gris-med); }
+  .clase-row:last-child { border-bottom: none; }
+  .clase-hora { background: var(--verde); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; text-align: center; min-width: 70px; line-height: 1.3; }
+  .clase-info { flex: 1; }
+  .clase-info .nom { font-weight: 700; font-size: 15px; color: var(--texto); }
+  .clase-info .coach { font-size: 12px; color: var(--verde); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .clase-info .desc { font-size: 12px; color: var(--texto-sec); margin-top: 4px; }
+  .dia-titulo { font-size: 12px; font-weight: 800; color: var(--verde); text-transform: uppercase; letter-spacing: 2px; margin: 14px 0 6px; }
+  .dia-titulo.hoy { background: rgba(124,179,66,0.15); border: 1px solid var(--verde); padding: 4px 10px; border-radius: 6px; display: inline-block; }
+  .aviso { padding: 14px; border-left: 4px solid var(--verde); background: var(--gris-osc); border-radius: 8px; margin-bottom: 10px; }
+  .aviso.urgente { border-left-color: #dc2626; background: rgba(220,38,38,0.1); }
+  .aviso-titulo { font-weight: 700; font-size: 14px; color: var(--texto); }
+  .aviso-msg { margin-top: 4px; font-size: 13px; color: var(--gris-claro); }
+  .aviso-fecha { font-size: 11px; color: var(--texto-sec); margin-top: 6px; }
+  .empty { text-align: center; padding: 30px 20px; color: var(--texto-sec); font-size: 13px; }
+  .err { background: rgba(220,38,38,0.15); color: #fca5a5; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 13px; text-align: center; border-left: 4px solid #dc2626; }
+  .nav { display: flex; background: var(--gris-osc); border-top: 1px solid var(--gris-med); padding: 8px 0; position: sticky; bottom: 0; }
+  .nav button { flex: 1; background: transparent; border: none; padding: 8px 4px; cursor: pointer; font-family: inherit; color: var(--texto-sec); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .nav button.active { color: var(--verde); }
+  .nav button .icono { font-size: 22px; display: block; margin-bottom: 2px; }
+  .recordatorio { background: rgba(217,119,6,0.15); color: #fcd34d; padding: 12px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 14px; border-left: 4px solid #d97706; }
+  .recordatorio.urgente { background: rgba(220,38,38,0.15); color: #fca5a5; border-left-color: #dc2626; }
+  .loader { text-align: center; padding: 30px; color: var(--texto-sec); font-size: 13px; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid var(--gris-med); border-top-color: var(--verde); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .detail-row { display: flex; justify-content: space-between; padding: 6px 0; }
+  .detail-row + .detail-row { border-top: 1px solid var(--gris-med); }
+  .detail-row span { color: var(--texto-sec); font-size: 13px; }
+  .detail-row strong { color: var(--texto); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+const PLANES = {
+  'Mensual': { dias: 30, precio: 500 }
+};
+const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const DIAS_ORDEN = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+const API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwrYcuVAZUnIMEFR2lo0DEdJdkWfayVEqSetSmiCa7__LbUSgw-HiO3pFBhuBIFtrSsoA/exec';
+let API_URL = API_URL_DEFAULT || localStorage.getItem('gym:api_url') || '';
+
+async function apiGet(accion, params = {}) {
+  const qs = new URLSearchParams({ accion, ...params }).toString();
+  const res = await fetch(`${API_URL}?${qs}`);
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'error');
+  return json.data;
+}
+
+function diasRestantes(vence) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const v = new Date(vence); v.setHours(0,0,0,0);
+  return Math.round((v - hoy) / 86400000);
+}
+function estado(socio) {
+  const d = diasRestantes(socio.Vence);
+  if (d < 0) return { tipo: 'vencida', label: 'VENCIDA', dias: d };
+  if (d <= 5) return { tipo: 'porvencer', label: 'POR VENCER', dias: d };
+  return { tipo: 'vigente', label: 'VIGENTE', dias: d };
+}
+
+let socioActual = null;
+let pantalla = 'membresia';
+const app = document.getElementById('app');
+
+const sesion = sessionStorage.getItem('gym:sesion');
+if (sesion && API_URL) {
+  apiGet('socio', { numero: sesion }).then(s => { socioActual = s; render(); }).catch(() => render());
+} else {
+  render();
+}
+
+function render() {
+  if (!API_URL) return renderConfigInicial();
+  if (!socioActual) return renderLogin();
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="logout" onclick="cerrarSesion()">SALIR</button>
+      <h1>${String(socioActual.Nombre).split(' ')[0].toUpperCase()}</h1>
+      <div class="saludo">SOCIO #${socioActual.Numero}</div>
+    </div>
+    <div class="main" id="main"></div>
+    <div class="nav">
+      <button data-p="membresia" class="${pantalla==='membresia'?'active':''}"><span class="icono">💳</span>Membresía</button>
+      <button data-p="clases" class="${pantalla==='clases'?'active':''}"><span class="icono">📅</span>Clases</button>
+      <button data-p="avisos" class="${pantalla==='avisos'?'active':''}"><span class="icono">📢</span>Avisos</button>
+    </div>
+  `;
+  document.querySelectorAll('.nav button').forEach(b => {
+    b.addEventListener('click', () => { pantalla = b.dataset.p; render(); });
+  });
+  if (pantalla === 'membresia') renderMembresia();
+  else if (pantalla === 'clases') renderClases();
+  else if (pantalla === 'avisos') renderAvisos();
+}
+
+function renderConfigInicial() {
+  app.innerHTML = `
+    <div class="login-wrap">
+      <div class="login-box">
+        <div class="logo-circle">PS</div>
+        <h2>PERFECT SPORT GYM</h2>
+        <p class="sub">ENTRENA · COMPITE · REPITE</p>
+        <div class="field">
+          <label>URL de Apps Script</label>
+          <input id="cfg-url" type="url" class="normal" placeholder="https://script.google.com/...">
+        </div>
+        <button id="cfg-btn" class="btn btn-primary">GUARDAR</button>
+        <div id="cfg-err"></div>
+      </div>
+    </div>
+  `;
+  document.getElementById('cfg-btn').addEventListener('click', () => {
+    const url = document.getElementById('cfg-url').value.trim();
+    if (!url.startsWith('https://script.google.com')) {
+      document.getElementById('cfg-err').innerHTML = `<div class="err">URL inválida</div>`;
+      return;
+    }
+    localStorage.setItem('gym:api_url', url);
+    API_URL = url;
+    render();
+  });
+}
+
+function renderLogin() {
+  app.innerHTML = `
+    <div class="login-wrap">
+      <div class="login-box">
+        <div class="logo-circle">PS</div>
+        <h2>PERFECT SPORT GYM</h2>
+        <p class="sub">ENTRENA · COMPITE · REPITE</p>
+        <div class="field">
+          <label>Número de socio</label>
+          <input id="login-num" type="number" placeholder="Ej. 1001" autofocus>
+        </div>
+        <button id="login-btn" class="btn btn-primary">INICIAR SESIÓN</button>
+        <div id="login-err"></div>
+      </div>
+    </div>
+  `;
+  const input = document.getElementById('login-num');
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-err');
+  async function intentar() {
+    const v = input.value.trim();
+    if (!v) return;
+    btn.disabled = true;
+    err.innerHTML = `<div class="loader"><span class="spinner"></span>Verificando...</div>`;
+    try {
+      const s = await apiGet('socio', { numero: v });
+      socioActual = s;
+      sessionStorage.setItem('gym:sesion', String(s.Numero));
+      pantalla = 'membresia';
+      render();
+    } catch {
+      err.innerHTML = `<div class="err">❌ Número no encontrado. Verifica con recepción.</div>`;
+      btn.disabled = false;
+    }
+  }
+  btn.addEventListener('click', intentar);
+  input.addEventListener('keypress', e => { if (e.key === 'Enter') intentar(); });
+}
+
+window.cerrarSesion = function() {
+  socioActual = null;
+  sessionStorage.removeItem('gym:sesion');
+  render();
+};
+
+function renderMembresia() {
+  const e = estado(socioActual);
+  const main = document.getElementById('main');
+  const cls = e.tipo === 'vencida' ? 'vencida' : (e.tipo === 'porvencer' ? 'porvencer' : '');
+  const precio = PLANES[socioActual.Plan]?.precio || 500;
+  let recordatorio = '';
+  if (e.tipo === 'vencida') {
+    recordatorio = `<div class="recordatorio urgente">🚨 <strong>Su membresía está vencida</strong><br>
+      Renueve su plan ${socioActual.Plan} por <strong>$${precio}</strong> para seguir entrenando.</div>`;
+  } else if (e.tipo === 'porvencer') {
+    recordatorio = `<div class="recordatorio">⏰ <strong>Su membresía vence en ${e.dias} día${e.dias===1?'':'s'}</strong><br>
+      Renueve por <strong>$${precio}</strong> para no perder su acceso.</div>`;
+  }
+  main.innerHTML = `
+    ${recordatorio}
+    <div class="mem-card ${cls}">
+      <div class="mem-num">SOCIO #${socioActual.Numero}</div>
+      <div class="mem-nombre">${socioActual.Nombre}</div>
+      <div class="mem-status">${e.label}</div>
+      <div class="mem-detalle">
+        ${e.tipo === 'vencida' ? `Vencida hace <strong>${Math.abs(e.dias)} días</strong>` : `Quedan <strong>${e.dias} día${e.dias===1?'':'s'}</strong>`}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalle del plan</div>
+      <div class="detail-row"><span>Plan</span><strong>${socioActual.Plan}</strong></div>
+      <div class="detail-row"><span>Inscripción</span><strong>${socioActual.FechaInscripcion}</strong></div>
+      <div class="detail-row"><span>Vence</span><strong>${socioActual.Vence}</strong></div>
+      <div class="detail-row"><span>Costo renovación</span><strong style="color:var(--verde)">$${precio}</strong></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Contacto</div>
+      <div style="font-size:13px; color: var(--gris-claro)">
+        ${socioActual.Telefono ? `📱 ${socioActual.Telefono}<br>` : ''}
+        ${socioActual.Correo ? `✉️ ${socioActual.Correo}` : ''}
+        ${!socioActual.Telefono && !socioActual.Correo ? '<span style="color:var(--texto-sec)">Sin datos</span>' : ''}
+      </div>
+    </div>
+  `;
+}
+
+async function renderClases() {
+  const main = document.getElementById('main');
+  main.innerHTML = `<div class="loader"><span class="spinner"></span>Cargando clases...</div>`;
+  try {
+    const clases = await apiGet('clases');
+    if (!clases.length) {
+      main.innerHTML = `<div class="card"><div class="empty">📅 Aún no hay clases programadas.</div></div>`;
+      return;
+    }
+    const hoyNombre = DIAS[new Date().getDay()];
+    const porDia = {};
+    DIAS_ORDEN.forEach(d => porDia[d] = []);
+    clases.forEach(c => { if (porDia[c.Dia]) porDia[c.Dia].push(c); });
+    Object.values(porDia).forEach(arr => arr.sort((a,b) => String(a.Inicio).localeCompare(String(b.Inicio))));
+    let html = '';
+    DIAS_ORDEN.filter(d => porDia[d].length).forEach(d => {
+      const esHoy = d === hoyNombre;
+      html += `<div class="dia-titulo ${esHoy?'hoy':''}">${d}${esHoy?' · HOY':''}</div>`;
+      html += `<div class="card" style="padding:8px 16px;">`;
+      porDia[d].forEach(c => {
+        html += `<div class="clase-row">
+          <div class="clase-hora">${c.Inicio}<br>–<br>${c.Fin}</div>
+          <div class="clase-info">
+            <div class="nom">${c.Nombre}</div>
+            <div class="coach">👤 ${c.Coach}</div>
+            ${c.Descripcion ? `<div class="desc">${c.Descripcion}</div>` : ''}
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+    main.innerHTML = html;
+  } catch (e) {
+    main.innerHTML = `<div class="card"><div class="err">Error: ${e.message}</div></div>`;
+  }
+}
+
+async function renderAvisos() {
+  const main = document.getElementById('main');
+  main.innerHTML = `<div class="loader"><span class="spinner"></span>Cargando avisos...</div>`;
+  try {
+    const avisos = await apiGet('avisos');
+    if (!avisos.length) {
+      main.innerHTML = `<div class="card"><div class="empty">📢 No hay avisos por ahora.</div></div>`;
+      return;
+    }
+    main.innerHTML = `<div class="card">${avisos.map(a => `
+      <div class="aviso ${a.Urgente?'urgente':''}">
+        <div class="aviso-titulo">${a.Urgente?'🚨 ':'📢 '}${a.Titulo}</div>
+        <div class="aviso-msg">${a.Mensaje}</div>
+        <div class="aviso-fecha">${new Date(a.Fecha).toLocaleString('es-MX')}</div>
+      </div>`).join('')}</div>`;
+  } catch (e) {
+    main.innerHTML = `<div class="card"><div class="err">Error: ${e.message}</div></div>`;
+  }
+}
+</script>
+</body>
+</html>
