@@ -368,7 +368,7 @@ async function renderSocios() {
             <td>${s.Plan}</td><td>${s.Vence}</td>
             <td><span class="badge badge-${e.tipo}">${e.label}</span></td>
             <td style="white-space:nowrap">
-              <button class="btn btn-primary" data-renovar="${s.Numero}" data-plan="${s.Plan}" style="padding:5px 10px; font-size:11px">💰 Renovar</button>
+              '<button onclick=\'abrirModalRenovar(' + JSON.stringify(s) + ')\'>RENOVAR</button>'
               <button class="btn btn-danger" data-del="${s.Numero}" style="padding:5px 10px; font-size:11px; margin-left:4px">Eliminar</button>
             </td>
           </tr>`;
@@ -545,6 +545,179 @@ async function renderAvisos() {
 }
 
 render();
+// ============ RENOVACION FLEXIBLE ============
+let planesDisponibles = [];
+let socioRenovando = null;
+
+async function cargarPlanes() {
+  try {
+    const res = await fetch(API_URL + '?accion=planes');
+    const json = await res.json();
+    if (json.ok) {
+      planesDisponibles = json.data;
+    }
+  } catch (e) {
+    console.error('Error cargando planes', e);
+  }
+}
+
+function abrirModalRenovar(socio) {
+  socioRenovando = socio;
+
+  // Info del socio
+  document.getElementById('modalSocioInfo').innerHTML =
+    '<strong>' + socio.Nombre + '</strong><br>' +
+    'Socio #' + socio.Numero + ' · Vence: ' + socio.Vence;
+
+  // Llenar select de planes
+  const select = document.getElementById('modalPlan');
+  select.innerHTML = '<option value="">-- Selecciona plan --</option>';
+
+  planesDisponibles.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.Nombre;
+    opt.textContent = p.Nombre + ' - $' + p.Precio + ' (' + p.Dias + ' días)';
+    opt.dataset.precio = p.Precio;
+    opt.dataset.dias = p.Dias;
+    select.appendChild(opt);
+  });
+
+  // Opción "Otro"
+  const otro = document.createElement('option');
+  otro.value = 'Otro';
+  otro.textContent = 'Otro (monto libre)';
+  select.appendChild(otro);
+
+  // Reset campos
+  document.getElementById('modalMonto').value = '';
+  document.getElementById('modalDias').value = '';
+  document.getElementById('modalNuevaFecha').textContent = '--/--/----';
+
+  document.getElementById('modalRenovar').style.display = 'flex';
+}
+
+function cambioPlan() {
+  const select = document.getElementById('modalPlan');
+  const opt = select.options[select.selectedIndex];
+
+  if (opt.value === 'Otro' || opt.value === '') {
+    document.getElementById('modalMonto').value = '';
+    document.getElementById('modalDias').value = '';
+  } else {
+    document.getElementById('modalMonto').value = opt.dataset.precio;
+    document.getElementById('modalDias').value = opt.dataset.dias;
+  }
+
+  calcularNuevaFecha();
+}
+
+// Recalcular fecha cuando cambian los días
+document.addEventListener('DOMContentLoaded', () => {
+  const modalDias = document.getElementById('modalDias');
+  if (modalDias) modalDias.addEventListener('input', calcularNuevaFecha);
+});
+
+function calcularNuevaFecha() {
+  const dias = parseInt(document.getElementById('modalDias').value) || 0;
+  if (dias <= 0 || !socioRenovando) {
+    document.getElementById('modalNuevaFecha').textContent = '--/--/----';
+    return;
+  }
+
+  // Parsear fecha de vencimiento actual del socio
+  const partes = socioRenovando.Vence.split('/');
+  let venceActual;
+  if (partes.length === 3) {
+    venceActual = new Date(partes[2], partes[1] - 1, partes[0]);
+  } else {
+    venceActual = new Date(socioRenovando.Vence);
+  }
+
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+
+  const fechaBase = venceActual > hoy ? venceActual : hoy;
+  const nuevaFecha = new Date(fechaBase);
+  nuevaFecha.setDate(nuevaFecha.getDate() + dias);
+
+  const dd = String(nuevaFecha.getDate()).padStart(2,'0');
+  const mm = String(nuevaFecha.getMonth() + 1).padStart(2,'0');
+  const yyyy = nuevaFecha.getFullYear();
+
+  document.getElementById('modalNuevaFecha').textContent = dd + '/' + mm + '/' + yyyy;
+}
+
+function cerrarModalRenovar() {
+  document.getElementById('modalRenovar').style.display = 'none';
+  socioRenovando = null;
+}
+
+async function confirmarRenovacion() {
+  const plan = document.getElementById('modalPlan').value;
+  const monto = parseFloat(document.getElementById('modalMonto').value);
+  const dias = parseInt(document.getElementById('modalDias').value);
+
+  // Validaciones
+  if (!plan) { alert('Selecciona un plan'); return; }
+  if (!monto || monto <= 0) { alert('Ingresa el monto'); return; }
+  if (!dias || dias <= 0) { alert('Ingresa los días'); return; }
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        accion: 'renovar_flexible',
+        numero: socioRenovando.Numero,
+        plan: plan,
+        monto: monto,
+        dias: dias
+      })
+    });
+    const json = await res.json();
+
+    if (json.ok) {
+      alert('✅ Renovación exitosa\n\nPlan: ' + json.data.plan + '\nMonto: $' + json.data.monto + '\nNueva fecha: ' + json.data.nuevoVence);
+      cerrarModalRenovar();
+      cargarSocios(); // Recarga la lista
+    } else {
+      alert('❌ Error: ' + json.error);
+    }
+  } catch (e) {
+    alert('❌ Error de conexión: ' + e.message);
+  }
+}
+
+// Al cargar la página, cargar planes
+window.addEventListener('load', cargarPlanes);
 </script>
+<!-- MODAL RENOVACION FLEXIBLE -->
+<div id="modalRenovar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+  <div style="background:#1a1a1a; border:2px solid #7CB342; border-radius:12px; padding:24px; max-width:500px; width:90%; max-height:90vh; overflow-y:auto;">
+    <h3 style="color:#7CB342; margin-bottom:16px; font-size:20px;">🔄 RENOVAR MEMBRESÍA</h3>
+    <div id="modalSocioInfo" style="color:#ccc; margin-bottom:20px; padding:12px; background:#0f0f0f; border-radius:6px;"></div>
+
+    <label style="color:#7CB342; font-size:12px; font-weight:700;">SELECCIONA EL PLAN *</label>
+    <select id="modalPlan" onchange="cambioPlan()" style="width:100%; padding:10px; margin:8px 0 16px 0; background:#0f0f0f; border:1px solid #333; color:#fff; border-radius:6px;">
+      <option value="">Cargando planes...</option>
+    </select>
+
+    <label style="color:#7CB342; font-size:12px; font-weight:700;">MONTO PAGADO ($)</label>
+    <input type="number" id="modalMonto" style="width:100%; padding:10px; margin:8px 0 16px 0; background:#0f0f0f; border:1px solid #333; color:#fff; border-radius:6px;" placeholder="500">
+
+    <label style="color:#7CB342; font-size:12px; font-weight:700;">DÍAS A AGREGAR</label>
+    <input type="number" id="modalDias" style="width:100%; padding:10px; margin:8px 0 20px 0; background:#0f0f0f; border:1px solid #333; color:#fff; border-radius:6px;" placeholder="30">
+
+    <div style="background:#0f0f0f; padding:12px; border-radius:6px; margin-bottom:20px; border-left:3px solid #7CB342;">
+      <div style="color:#7CB342; font-size:11px; margin-bottom:4px; font-weight:700;">NUEVA FECHA DE VENCIMIENTO</div>
+      <div id="modalNuevaFecha" style="color:#fff; font-size:16px; font-weight:700;">--/--/----</div>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button onclick="cerrarModalRenovar()" style="flex:1; padding:12px; background:#333; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:700;">CANCELAR</button>
+      <button onclick="confirmarRenovacion()" style="flex:1; padding:12px; background:#7CB342; color:#000; border:none; border-radius:6px; cursor:pointer; font-weight:700;">CONFIRMAR RENOVACIÓN</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
+
